@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Omnify</string>
+
+    <string name="label_title1">Hacker News</string>
+    <string name="label_title2">mobile</string>
+
+    <string name="facebook_app_id">283346998947074</string>
+    <string name="fb_login_protocol_scheme">fb283346998947074</string>
+    <string name="logout_message">Caution ! this will signout ?</string>
+    <string name="logout_title">Logout</string>
+    <string name="login_phoneauth_title">Phone Authentication</string>
+    <string name="login_phoneauth_ms">Enter your phone number:</string>
+    <string name="title_activity_article_detail">ArticleDetailActivity</string>
+    <string name="title">Top stories</string>
+    <string name="subtile">Updated %s</string>
+    <string name="label_type">Type: %s</string>
+    <string name="label_score">Score: %s</string>
+    <string name="label_by">By: %s</string>
+    <string name="label_time">Updated: %s</string>
+    <string name="label_comment_heading">%s comments</string>
+    <string name="phone_sigin">Sign in via phone</string>
+</resources>
