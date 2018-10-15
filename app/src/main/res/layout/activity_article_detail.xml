@@ -58,7 +58,6 @@
                     android:linksClickable="true"
                     android:textSize="13sp"
                     android:textColorLink="@android:color/white"
-                    android:text="@string/label_type"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/txt_article_title" />
 
@@ -68,7 +67,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
-                    android:text="@string/label_by"
                     android:textSize="13sp"
                     android:textColor="@android:color/white"
                     app:layout_constraintStart_toStartOf="parent"
@@ -80,7 +78,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="@string/label_time"
+                    android:textColor="@android:color/white"
                     app:layout_constraintStart_toEndOf="@id/txt_article_by"
                     app:layout_constraintTop_toBottomOf="@+id/txt_article_url" />
 
@@ -89,7 +87,7 @@
             <android.support.design.widget.TabLayout
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="24dp"
                 app:tabGravity="fill"
                 app:tabMode="fixed"
                 style="@style/AppTheme.TabStyle"
@@ -109,16 +107,9 @@
     <android.support.v4.view.ViewPager
         android:id="@+id/pager_comments_webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <!--<include layout="@layout/fragment_comments" />-->
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/fab_margin"
-        app:layout_anchor="@id/app_bar"
-        app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_portfolio" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:context=".activities.ArticleDetailActivity"
+        tools:showIn="@layout/activity_article_detail" />
 
 </android.support.design.widget.CoordinatorLayout>

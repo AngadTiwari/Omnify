@@ -1,30 +1,22 @@
 package com.angad.omnify.activities
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.AppBarLayout
-import android.support.v4.app.FragmentTransaction
-import android.support.v7.app.ActionBar
+import android.support.design.widget.TabLayout
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import com.angad.omnify.AppController
-import com.angad.omnify.IOnCommentFetched
 import com.angad.omnify.R
-import com.angad.omnify.adapters.CommentsListAdapter
 import com.angad.omnify.adapters.DetailPagerAdapter
 import com.angad.omnify.helpers.AppUtils
 import com.angad.omnify.models.Article
 import com.angad.omnify.models.ArticleEvent
-import com.angad.omnify.models.Comment
+import com.angad.omnify.models.PagerData
+import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_article_detail.*
-import kotlinx.android.synthetic.main.fragment_comments.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -32,14 +24,17 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ArticleDetailActivity : AppCompatActivity(), View.OnClickListener, AppBarLayout.OnOffsetChangedListener {
+/**
+ * @author Angad Tiwari
+ * @msg Article Detail page containing 2 child fragment using viewpager
+ */
+class ArticleDetailActivity : AppCompatActivity(), AppBarLayout.OnOffsetChangedListener, TabLayout.OnTabSelectedListener {
 
     private val tag: String? = ArticleDetailActivity::class.java.simpleName
-    private val comments: MutableList<Comment> = mutableListOf()
-    private var adapter_comments: CommentsListAdapter? = null
     private var mArticle: Article? = null
 
     private lateinit var mDetailPagerAdapter: DetailPagerAdapter
+    private lateinit var realm: Realm
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,38 +44,25 @@ class ArticleDetailActivity : AppCompatActivity(), View.OnClickListener, AppBarL
         attachListeners()
     }
 
+    /**
+     * attach the listeners and handlers
+     */
     private fun attachListeners() {
-        fab.setOnClickListener(this)
         app_bar.addOnOffsetChangedListener(this)
     }
 
+    /**
+     * init views
+     */
     private fun initView() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-
-        //recycler_comments.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        //adapter_comments = CommentsListAdapter(this@ArticleDetailActivity, comments)
-        //recycler_comments.adapter = adapter_comments
-
-        mDetailPagerAdapter = DetailPagerAdapter(supportFragmentManager)
     }
 
     /**
-     * onclick handler
+     * on collapsing toolbar offset change listener to show/hide toolbar with title
      */
-    override fun onClick(view: View?) {
-        when(view?.id) {
-        //clicking to this floating btn, opens mine portfolio
-            R.id.fab -> {
-                val url = AppUtils.MINE_PORTFOLIO_URL
-                val i = Intent(Intent.ACTION_VIEW)
-                i.data = Uri.parse(url)
-                startActivity(i)
-            }
-        }
-    }
-
     override fun onOffsetChanged(appbar: AppBarLayout?, verticalOffset: Int) {
         if (Math.abs(verticalOffset)-appbar?.getTotalScrollRange()!! == 0) {
             toolbar_layout.title = mArticle?.title
@@ -98,32 +80,17 @@ class ArticleDetailActivity : AppCompatActivity(), View.OnClickListener, AppBarL
 
         mArticle = event?.article
         bindData(event?.article)
+        updateTabs()
 
+        /**
+         * fetching the artcle using id
+         */
         AppController.getService()?.getArticleFromId(event.article.id)?.enqueue(object: Callback<Article> {
             override fun onResponse(call: Call<Article>?, response: Response<Article>?) {
                 bindData(response?.body())
                 when(response?.code()) {
                     200 -> {
                         mArticle = response.body()
-                        response.body()?.kids?.let {
-                            comments?.clear()
-                            response.body()?.kids?.forEach {
-                                comments?.add(Comment())
-                            }
-                            response.body()?.kids?.forEachIndexed { index, it ->
-                                fetchCommentFromId(it, object: IOnCommentFetched {
-                                    override fun onResponse(comment: Comment?) {
-                                        when(comment) {
-                                            null -> Log.d(tag, "error while fetching comment with id:$it")
-                                            else -> {
-                                                comments?.set(index, comment)
-                                                //adapter_comments?.notifyItemChanged(index)
-                                            }
-                                        }
-                                    }
-                                })
-                            }
-                        }
                     }
                     else -> {
                         Toast.makeText(this@ArticleDetailActivity, "Error while fetching android trending repos", Toast.LENGTH_LONG).show()
@@ -137,47 +104,51 @@ class ArticleDetailActivity : AppCompatActivity(), View.OnClickListener, AppBarL
         })
     }
 
-    fun fetchCommentFromId(id: Int, callback: IOnCommentFetched) {
-        AppController.getService()?.getCommentFromId(id)?.enqueue(object: Callback<Comment> {
-            override fun onResponse(call: Call<Comment>?, response: Response<Comment>?) {
-                callback.onResponse(response?.body())
-            }
-
-            override fun onFailure(call: Call<Comment>?, t: Throwable?) {
-                callback.onResponse(null)
-            }
-        })
-    }
-
+    /**
+     * bind data to view
+     */
     private fun bindData(article: Article?) {
         txt_article_title.text = article?.title
         txt_article_url.text = article?.url
         txt_article_by.text = AppUtils.makeTextBold(String.format(resources.getString(R.string.label_by), article?.by.toString()), 0, 3)
         txt_article_time.text = AppUtils.makeTextBold(String.format(resources.getString(R.string.label_time), DateUtils.getRelativeTimeSpanString(article?.time?.toLong()!!*1000, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)), 0, 8)
-
-        createTabsOrNot()
     }
 
-    private fun createTabsOrNot() {
-        if(mArticle?.url.isNullOrEmpty())
-            return
-        // Create a tab listener that is called when the user changes tabs.
-        val tabListener: android.app.ActionBar.TabListener = object: android.app.ActionBar.TabListener{
-            override fun onTabReselected(p0: android.app.ActionBar.Tab?, p1: android.app.FragmentTransaction?) {
-
-            }
-
-            override fun onTabSelected(p0: android.app.ActionBar.Tab?, p1: android.app.FragmentTransaction?) {
-
-            }
-
-            override fun onTabUnselected(p0: android.app.ActionBar.Tab?, p1: android.app.FragmentTransaction?) {
-
-            }
-        }
+    /**
+     * update tab, if no web url then don;t create article tab and if zero comment then don't create comments tab
+     */
+    private fun updateTabs() {
         tabs.removeAllTabs()
-        tabs.addTab(tabs.newTab().setText(mArticle?.kids?.size.toString()+" COMMENTS"))
-        tabs.addTab(tabs.newTab().setText("ARTICLES"))
+        var pagerData = arrayListOf<PagerData>()
+        if(mArticle?.kids != null && mArticle?.kids?.isNotEmpty()!!){
+            tabs.addTab(tabs.newTab().setText(mArticle?.kids?.size.toString()+" COMMENTS"))
+            val article: Article? = mArticle
+            pagerData.add(PagerData(AppUtils.TAB_COMMENT, article!!))
+        }
+        if(!mArticle?.url?.isNullOrBlank()!!){
+            tabs.addTab(tabs.newTab().setText("ARTICLES"))
+            val article: Article? = mArticle
+            pagerData.add(PagerData(AppUtils.TAB_WEBVIEW, article!!))
+        }
+        tabs.addOnTabSelectedListener(this)
+
+        mDetailPagerAdapter = DetailPagerAdapter(supportFragmentManager, pagerData)
+        pager_comments_webview.adapter = mDetailPagerAdapter
+    }
+
+    /**
+     * on tab select change, change the viewpager current page
+     */
+    override fun onTabSelected(p0: TabLayout.Tab?) {
+        pager_comments_webview.currentItem = p0?.position!!
+    }
+
+    override fun onTabReselected(p0: TabLayout.Tab?) {
+
+    }
+
+    override fun onTabUnselected(p0: TabLayout.Tab?) {
+
     }
 
     public override fun onStart() {

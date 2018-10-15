@@ -19,4 +19,6 @@
     <string name="label_time">Updated: %s</string>
     <string name="label_comment_heading">%s comments</string>
     <string name="phone_sigin">Sign in via phone</string>
+    <string name="portfolio">Portfolio</string>
+    <string name="label_loading_view">Loading data ...</string>
 </resources>

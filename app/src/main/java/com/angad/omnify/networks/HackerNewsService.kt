@@ -6,6 +6,10 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
 
+/**
+ * @author Angad Tiwari
+ * @msg hacker news service interface to call retrofit api call
+ */
 interface HackerNewsService {
 
     @GET("topstories.json")

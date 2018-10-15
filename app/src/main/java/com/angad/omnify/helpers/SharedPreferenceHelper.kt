@@ -3,6 +3,9 @@ package com.angad.omnify.helpers
 import android.content.Context
 import android.content.SharedPreferences
 
+/**
+ * shared preference helper class for app omnify
+ */
 class SharedPreferenceHelper {
 
     companion object {

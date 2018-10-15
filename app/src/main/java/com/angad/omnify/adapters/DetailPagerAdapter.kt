@@ -5,20 +5,36 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentStatePagerAdapter
 import com.angad.omnify.fragments.CommentsFragment
+import com.angad.omnify.fragments.WebviewFragment
+import com.angad.omnify.helpers.AppUtils
+import com.angad.omnify.models.Article
+import com.angad.omnify.models.PagerData
 
-private const val COMMENTS_IDS_OBJECT = "comments_ids"
+/**
+ * detail page view pager's adapter to bind the proper fragment to tabs (comment or articlewebview)
+ */
+class DetailPagerAdapter(val fm: FragmentManager, val pagerData: ArrayList<PagerData>) : FragmentStatePagerAdapter(fm) {
 
-class DetailPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(fm) {
+    override fun getCount(): Int = pagerData.size
 
-    override fun getCount(): Int = 100
-
-    override fun getItem(i: Int): Fragment {
-        val fragment = CommentsFragment()
-        fragment.arguments = Bundle().apply {
-            // Our object is just an integer :-P
-            putInt(COMMENTS_IDS_OBJECT, i + 1)
+    override fun getItem(i: Int): Fragment? {
+        when(pagerData.get(i)?.type){
+            AppUtils.TAB_COMMENT -> {
+                val fragment = CommentsFragment()
+                fragment.arguments = Bundle().apply {
+                    putIntegerArrayList(AppUtils.COMMENTS_IDS_OBJECT, ArrayList(pagerData.get(i)?.data?.kids))
+                }
+                return fragment
+            }
+            AppUtils.TAB_WEBVIEW -> {
+                val fragment = WebviewFragment()
+                fragment.arguments = Bundle().apply {
+                    putString(AppUtils.ARTICLE_URL_OBJECT, pagerData.get(i)?.data?.url)
+                }
+                return fragment
+            }
         }
-        return fragment
+        return null
     }
 
     override fun getPageTitle(position: Int): CharSequence {

@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import com.angad.omnify.R
+import com.angad.omnify.models.ArticleEvent
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -27,8 +28,15 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.*
 import kotlinx.android.synthetic.main.activity_login.*
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.TimeUnit
 
+/**
+ * @author Angad Tiwari
+ * @msg login screen to login via google, facebook or phonenumber
+ * all the authentication is done by firebase auth
+ */
 class LoginActivity : AppCompatActivity(), View.OnClickListener, FacebookCallback<LoginResult> {
 
     private val tag: String? = LoginActivity::class.java.simpleName
@@ -76,6 +84,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, FacebookCallbac
         btn_google_signin.setSize(SignInButton.SIZE_WIDE)
     }
 
+    private lateinit var input: EditText
+
     /**
      * dialog to prompt user to give his/her phone number
      */
@@ -83,12 +93,11 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, FacebookCallbac
         val dialogBuilder = AlertDialog.Builder(this)
         dialogBuilder.setTitle(R.string.login_phoneauth_title)
         dialogBuilder.setMessage(R.string.login_phoneauth_ms)
-        val input = EditText(this)
+        input = EditText(this)
         input.inputType = InputType.TYPE_CLASS_PHONE
         input.hint = "+918989979511"
-        input.id = R.id.edit_phone
         dialogBuilder.setView(input)
-        dialogBuilder.setPositiveButton("Send Code", {dialogInterface, i -> sendCodeClickHandler((dialogInterface as AppCompatDialog).findViewById<EditText>(R.id.edit_phone)?.text.toString()) })
+        dialogBuilder.setPositiveButton("Send Code", {dialogInterface, i -> sendCodeClickHandler(input?.text.toString()) })
         dialogBuilder.setNegativeButton("Cancel", { dialog, whichButton -> progress_bar.visibility = View.GONE})
         dialogBuilder.setCancelable(false)
         dialogBuilder.create().show()
@@ -157,8 +166,8 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, FacebookCallbac
     public override fun onStart() {
         super.onStart()
         val currentUser = mAuth?.currentUser
-        Log.d(tag, "already login via: ${currentUser?.displayName}")
-        //startActivity(Intent(this@LoginActivity, ActiclesListActivity::class.java))
+        Toast.makeText(this, "already login via: ${currentUser?.displayName}", Toast.LENGTH_LONG).show()
+        startActivity(Intent(this@LoginActivity, ArticlesListActivity::class.java))
     }
 
     /**
@@ -235,7 +244,7 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, FacebookCallbac
                     // If sign in fails, display a message to the user.
                     Log.w(tag, "fb signInWithCredential:failure", task.exception)
                     progress_bar.visibility = View.GONE
-                    Toast.makeText(baseContext, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
     }

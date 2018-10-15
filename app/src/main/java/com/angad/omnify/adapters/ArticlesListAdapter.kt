@@ -17,6 +17,10 @@ import org.greenrobot.eventbus.EventBus
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * @author Angad Tiwari
+ * @msg articles list adapter for each row
+ */
 class ArticlesListAdapter(val context: Context, val articles: MutableList<Article>?): RecyclerView.Adapter<ArticlesListAdapter.ArticlesListAdapterViewHolder>() {
 
     private val formatToShow: SimpleDateFormat = SimpleDateFormat(AppUtils.APP_DATE_FORMAT, Locale.ENGLISH)
@@ -31,6 +35,12 @@ class ArticlesListAdapter(val context: Context, val articles: MutableList<Articl
     override fun onBindViewHolder(holder: ArticlesListAdapterViewHolder, position: Int) {
         val article: Article? = articles?.get(position)
 
+        if(article?.title.isNullOrBlank()) {
+            holder.txt_loading.visibility = View.VISIBLE
+            return
+        }
+
+        holder.txt_loading.visibility = View.GONE
         holder.txt_score.text = article?.score.let {
             if(it==null) {
                 return@let "0"
@@ -66,17 +76,16 @@ class ArticlesListAdapter(val context: Context, val articles: MutableList<Articl
         val txt_url = view.txt_article_url
         val txt_time = view.txt_time
         val txt_usr = view.txt_usr
+        val txt_loading = view.txt_loading
 
         init {
-            // opens the repos detail screen on list item click
             card_article.setOnClickListener(View.OnClickListener {
                 val intent: Intent = Intent(adapter.context, ArticleDetailActivity::class.java)
                 adapter.context.startActivity(intent)
-                //Toast.makeText(adapter.context, "card clicked on index: $adapterPosition", Toast.LENGTH_SHORT).show()
-                // sending the repo data with a-bit delay, while the detail screen will register to eventbus
+                //sending the repo data with a-bit delay, while the detail screen will register to eventbus
                 card_article.postDelayed(Runnable {
                     EventBus.getDefault().post(ArticleEvent(article = adapter.articles?.get(adapterPosition)!!))
-                }, 600)
+                }, 1200)
             })
         }
     }

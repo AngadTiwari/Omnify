@@ -1,8 +1,12 @@
 package com.angad.omnify.models
 
-data class ArticlesId(val articlesId: List<Int>)
+import io.realm.RealmList
+import io.realm.RealmModel
+import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
+import io.realm.annotations.RealmClass
 
-data class Article(
+open class Article: RealmObject(){
         /**
          * by : BobbyVsTheDevil
          * descendants : 32
@@ -15,18 +19,18 @@ data class Article(
          * url : https://www.madinamerica.com/2018/10/recovering-emotions-24-years-antidepressants/
          */
 
-        var by: String? = null,
-        var descendants: Int = 0,
-        var id: Int = 0,
-        var score: Int = 0,
-        var time: Int = 0,
-        var title: String? = null,
-        var type: String? = null,
-        var url: String? = null,
-        var kids: List<Int>? = null
-)
+        var by: String? = null
+        var descendants: Int = 0
+        @PrimaryKey var id: Int = 0
+        var score: Int = 0
+        var time: Int = 0
+        var title: String? = null
+        var type: String? = null
+        var url: String? = null
+        var kids: RealmList<Int>? = null
+}
 
-data class Comment (
+open class Comment: RealmObject() {
         /**
          * by : psergeant
          * id : 18159669
@@ -43,11 +47,11 @@ data class Comment (
          * type : comment
          */
 
-        var by: String? = null,
-        var id: Int = 0,
-        var parent: Int = 0,
-        var text: String? = null,
-        var time: Int = 0,
-        var type: String? = null,
-        var kids: List<Int>? = null
-)
+        var by: String? = null
+        @PrimaryKey var id: Int = 0
+        var parent: Int = 0
+        var text: String? = null
+        var time: Int = 0
+        var type: String? = null
+        var kids: RealmList<Int>? = null
+}

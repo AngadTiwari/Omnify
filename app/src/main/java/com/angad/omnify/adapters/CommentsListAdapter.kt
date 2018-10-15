@@ -19,6 +19,10 @@ import org.greenrobot.eventbus.EventBus
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * @author Angad Tiwari
+ * @msg comment list adapter for each row
+ */
 class CommentsListAdapter(val context: Context, val comments: MutableList<Comment>?): RecyclerView.Adapter<CommentsListAdapter.ArticlesListAdapterViewHolder>() {
 
     private val formatToShow: SimpleDateFormat = SimpleDateFormat(AppUtils.APP_DATE_FORMAT, Locale.ENGLISH)
@@ -33,9 +37,13 @@ class CommentsListAdapter(val context: Context, val comments: MutableList<Commen
     override fun onBindViewHolder(holder: ArticlesListAdapterViewHolder, position: Int) {
         val comment: Comment? = comments?.get(position)
 
-        holder.txt_comment.text = Html.fromHtml(comment?.text)
         holder.txt_by.text = comment?.by
-        holder.txt_time.text = DateUtils.getRelativeTimeSpanString(comment?.time?.toLong()!!*1000, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)
+        if(comment?.time!=null) {
+            holder.txt_time.text = DateUtils.getRelativeTimeSpanString(comment?.time?.toLong()!! * 1000, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)
+        }
+        if(comment?.text!=null) {
+            holder.txt_comment.text = Html.fromHtml(comment?.text)
+        }
     }
 
     override fun getItemCount(): Int {
