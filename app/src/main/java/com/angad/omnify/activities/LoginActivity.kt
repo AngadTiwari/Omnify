@@ -166,8 +166,6 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener, FacebookCallbac
     public override fun onStart() {
         super.onStart()
         val currentUser = mAuth?.currentUser
-        Toast.makeText(this, "already login via: ${currentUser?.displayName}", Toast.LENGTH_LONG).show()
-        startActivity(Intent(this@LoginActivity, ArticlesListActivity::class.java))
     }
 
     /**
